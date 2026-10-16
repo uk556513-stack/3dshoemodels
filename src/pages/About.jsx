@@ -84,10 +84,10 @@ export default function About() {
               of creativity, and a companion for every journey.
             </p>
 
-            <Link to="/shop" className="btn-elite-primary">
-              EXPLORE THE COLLECTION
-              <ArrowRight size={18} />
-            </Link>
+            <Link to="/shop" className="btn-elite-primary explore-btn">
+  EXPLORE THE COLLECTION
+  <ArrowRight size={18} />
+</Link>
           </motion.div>
 
           <div className="about-hero-bottom">
@@ -112,10 +112,13 @@ export default function About() {
             >
               <div className="about-story-image">
                 <img
-                  src="/images/about-banner.jpg"
-                  alt="Élite Sneakers design philosophy"
-                  loading="lazy"
-                />
+                src={`${import.meta.env.BASE_URL}images/about-banner.jpg`}
+                alt="Élite Sneakers design philosophy"
+                loading="lazy"
+                onError={(e) => {
+                console.error("About image failed:", e.currentTarget.src);
+              }}
+              />
 
                 <div className="about-story-image-label">
                   <Sparkles size={20} />

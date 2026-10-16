@@ -1,9 +1,7 @@
-import React, { Suspense } from "react";
 
-import {
-  Canvas,
-  useFrame,
-} from "@react-three/fiber";
+import React, { Suspense, useMemo, useRef } from "react";
+
+import { Canvas, useFrame } from "@react-three/fiber";
 
 import {
   ContactShadows,
@@ -18,24 +16,21 @@ import * as THREE from "three";
 function ModelLoading() {
   return (
     <Html center>
-      <div
-        style={{
-          color: "#ff5b25",
-          fontSize: "12px",
-          letterSpacing: "3px",
-          whiteSpace: "nowrap",
-        }}
-      >
+      <div className="model-loading-text">
         LOADING 3D MODEL...
       </div>
     </Html>
   );
 }
 
-function SneakerModel({ modelPath, autoRotate = true }) {
+function SneakerModel({
+  modelPath,
+  autoRotate = true,
+}) {
   const { scene } = useGLTF(modelPath);
+  const modelRef = useRef();
 
-  const model = React.useMemo(() => {
+  const model = useMemo(() => {
     const clonedScene = scene.clone(true);
 
     clonedScene.traverse((child) => {
@@ -48,37 +43,34 @@ function SneakerModel({ modelPath, autoRotate = true }) {
     return clonedScene;
   }, [scene]);
 
-  const modelRef = React.useRef();
-
   useFrame((state, delta) => {
-    if (modelRef.current && autoRotate) {
-      modelRef.current.rotation.y += delta * 0.22;
+    if (!modelRef.current || !autoRotate) return;
 
-      modelRef.current.rotation.x =
-        Math.sin(state.clock.elapsedTime * 0.5) * 0.035;
-    }
+    modelRef.current.rotation.y += delta * 0.22;
+
+    modelRef.current.rotation.x =
+      Math.sin(state.clock.elapsedTime * 0.5) * 0.035;
   });
-return (
-  <group ref={modelRef} position={[0, -0.2, 0]}>
-    <primitive
-      object={model}
-      scale={0.8}
-      rotation={[0, -Math.PI / 4, 0]}
-    />
-  </group>
-);
+
+  return (
+    <group ref={modelRef} position={[0, -0.2, 0]}>
+      <primitive
+        object={model}
+        scale={0.8}
+        rotation={[0, -Math.PI / 4, 0]}
+      />
+    </group>
+  );
 }
 
 const ShoeModel = ({
-  modelPath = "/models/sneaker.glb",
+  modelPath = `${import.meta.env.BASE_URL}models/sneaker.glb`,
   autoRotate = true,
   enableControls = true,
   className = "",
 }) => {
   return (
-    <div
-      className={`shoe-model-container ${className}`}
-    >
+    <div className={`shoe-model-container ${className}`}>
       <Canvas
         shadows
         dpr={[1, 1.75]}
@@ -124,7 +116,7 @@ const ShoeModel = ({
           {enableControls && (
             <OrbitControls
               enablePan={false}
-              enableZoom={true}
+              enableZoom
               minDistance={3}
               maxDistance={8}
               minPolarAngle={Math.PI / 4}

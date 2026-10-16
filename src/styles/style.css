@@ -19979,3 +19979,7 @@ footer a,
     text-align: center !important;
   }
 }
+.explore-btn {
+  position: relative;
+  top: 40px;
+}

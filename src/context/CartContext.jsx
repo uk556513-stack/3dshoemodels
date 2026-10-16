@@ -1,3 +1,4 @@
+
 import React, {
   createContext,
   useCallback,
@@ -7,34 +8,56 @@ import React, {
   useState,
 } from "react";
 
+import { products } from "../data/products";
+
 const CartContext = createContext(null);
 
 const STORAGE_KEY = "elite-sneakers-cart-v1";
+
+const productMap = new Map(
+  products.map((product) => [
+    String(product.id),
+    product,
+  ])
+);
 
 function readStoredCart() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
 
-    if (!stored) {
-      return [];
-    }
+    if (!stored) return [];
 
     const parsed = JSON.parse(stored);
 
-    if (!Array.isArray(parsed)) {
-      return [];
-    }
+    if (!Array.isArray(parsed)) return [];
 
-    return parsed.filter(
-      (item) =>
-        item &&
-        item.id !== undefined &&
-        typeof item.size === "string" &&
-        Number.isFinite(item.price) &&
-        Number.isFinite(item.quantity) &&
-        item.quantity > 0
-    );
-  } catch {
+    return parsed
+      .filter(
+        (item) =>
+          item &&
+          item.id !== undefined &&
+          typeof item.size === "string" &&
+          Number.isFinite(Number(item.price)) &&
+          Number.isFinite(Number(item.quantity)) &&
+          Number(item.quantity) > 0
+      )
+      .map((item) => {
+        const product = productMap.get(String(item.id));
+
+        return {
+          ...item,
+          name: product?.name ?? item.name ?? "Sneaker",
+          image: product?.image || item.image || "",
+          category: product?.category ?? item.category ?? "Lifestyle",
+          price: Number(item.price),
+          quantity: Math.min(
+            10,
+            Math.max(1, Math.floor(Number(item.quantity)))
+          ),
+        };
+      });
+  } catch (error) {
+    console.error("Unable to read cart:", error);
     return [];
   }
 }
@@ -48,8 +71,8 @@ export function CartProvider({ children }) {
         STORAGE_KEY,
         JSON.stringify(cartItems)
       );
-    } catch {
-      // Storage may be unavailable or full.
+    } catch (error) {
+      console.error("Unable to save cart:", error);
     }
   }, [cartItems]);
 
@@ -111,9 +134,13 @@ export function CartProvider({ children }) {
             ) {
               return {
                 ...item,
+                name: product.name,
+                image: product.image || item.image || "",
+                category: product.category || item.category || "",
+                price,
                 quantity: Math.min(
-                  item.quantity + amount,
-                  10
+                  10,
+                  item.quantity + amount
                 ),
               };
             }
@@ -127,7 +154,8 @@ export function CartProvider({ children }) {
           {
             id: product.id,
             name: product.name,
-            image: product.image,
+            image: product.image || "",
+            category: product.category || "",
             size,
             price,
             quantity: amount,

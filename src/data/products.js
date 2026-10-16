@@ -1,3 +1,4 @@
+
 const shoeImages = import.meta.glob(
   "../assets/shoes/*.png",
   {
@@ -6,15 +7,11 @@ const shoeImages = import.meta.glob(
   }
 );
 
-const imageMap = Object.entries(shoeImages).reduce(
-  (result, [path, image]) => {
-    const filename = path.split("/").pop();
-
-    result[filename] = image;
-
-    return result;
-  },
-  {}
+const imageMap = Object.fromEntries(
+  Object.entries(shoeImages).map(([path, image]) => [
+    path.split("/").pop().toLowerCase(),
+    image,
+  ])
 );
 
 const availableSizes = [
@@ -374,17 +371,19 @@ const rawProducts = [
   },
 ];
 
-export const products = rawProducts.map((product) => ({
-  ...product,
+// Match product image filenames with imported asset images
 
-  image:
-    imageMap[product.imageName] ??
-    "/images/shoe-placeholder.png",
+export const products = rawProducts.map((product) => {
+  const imageName = String(product.imageName || "").toLowerCase();
 
-  sizes: [...availableSizes],
+  return {
+    ...product,
+    image: imageMap[imageName] || "",
+    sizes: [...availableSizes],
+    sizePrices: makeSizePrices(product.price),
+  };
+});
 
-  sizePrices: makeSizePrices(product.price),
-}));
 
 export const getProductById = (id) => {
   return products.find(
@@ -407,9 +406,7 @@ export const getProductsByCategory = (category) => {
 };
 
 export const searchProducts = (searchTerm = "") => {
-  const normalizedSearch = searchTerm
-    .trim()
-    .toLowerCase();
+  const normalizedSearch = searchTerm.trim().toLowerCase();
 
   if (!normalizedSearch) {
     return products;

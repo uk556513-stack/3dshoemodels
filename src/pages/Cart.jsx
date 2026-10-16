@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -15,6 +16,28 @@ import {
 } from "lucide-react";
 
 import { useCart } from "../context/CartContext";
+
+const BASE_URL = import.meta.env.BASE_URL;
+
+const PLACEHOLDER_IMAGE = `${BASE_URL}images/shoe-placeholder.png`;
+
+function getImageUrl(image) {
+  if (!image) return PLACEHOLDER_IMAGE;
+
+  // External image URL or data URL
+  if (/^(https?:\/\/|data:|blob:)/i.test(image)) {
+    return image;
+  }
+
+  // Public asset path
+  if (image.startsWith("/images/")) {
+    return `${BASE_URL}${image.slice(1)}`;
+  }
+
+  // Existing Vite-imported asset URL
+  // Keep its generated URL unchanged.
+  return image;
+}
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -34,10 +57,7 @@ export default function Cart() {
   const [promoApplied, setPromoApplied] = useState(false);
 
   const deliveryCharge = useMemo(() => {
-    if (cartTotal <= 0 || cartTotal >= 5000) {
-      return 0;
-    }
-
+    if (cartTotal <= 0 || cartTotal >= 5000) return 0;
     return 99;
   }, [cartTotal]);
 
@@ -84,9 +104,7 @@ export default function Cart() {
   };
 
   const handleCheckout = () => {
-    if (cartItems.length === 0) {
-      return;
-    }
+    if (!cartItems.length) return;
 
     navigate("/contact", {
       state: {
@@ -96,10 +114,17 @@ export default function Cart() {
     });
   };
 
+  const handleImageError = (event) => {
+    const image = event.currentTarget;
+
+    console.error("Cart image failed:", image.src);
+
+    image.onerror = null;
+    image.src = PLACEHOLDER_IMAGE;
+  };
+
   return (
     <main className="cart-page">
-      {/* CART HERO */}
-
       <section className="cart-hero">
         <div className="container">
           <div className="breadcrumb-elite">
@@ -129,8 +154,6 @@ export default function Cart() {
           </div>
         </div>
       </section>
-
-      {/* CART CONTENT */}
 
       <section className="cart-content-section section-padding">
         <div className="container">
@@ -162,8 +185,6 @@ export default function Cart() {
             </div>
           ) : (
             <div className="row g-5">
-              {/* CART ITEMS */}
-
               <div className="col-lg-8">
                 <div className="cart-items-heading">
                   <h2>YOUR ITEMS</h2>
@@ -179,9 +200,10 @@ export default function Cart() {
                 </div>
 
                 <div className="cart-items-list">
-                  {cartItems.map((item, index) => {
+                  {cartItems.map((item) => {
                     const itemPrice = Number(item.price || 0);
                     const itemQuantity = Number(item.quantity || 1);
+                    const imageUrl = getImageUrl(item.image);
 
                     return (
                       <article
@@ -193,8 +215,10 @@ export default function Cart() {
                           className="cart-item-image"
                         >
                           <img
-                            src={item.image}
-                            alt={item.name}
+                            src={imageUrl}
+                            alt={item.name || "Sneaker"}
+                            loading="lazy"
+                            onError={handleImageError}
                           />
                         </Link>
 
@@ -267,10 +291,8 @@ export default function Cart() {
 
                         <div className="cart-item-total">
                           <span>ITEM TOTAL</span>
-
                           <strong>
-                            ₹
-                            {(
+                            ₹{(
                               itemPrice * itemQuantity
                             ).toLocaleString("en-IN")}
                           </strong>
@@ -287,10 +309,8 @@ export default function Cart() {
 
                 <div className="cart-security-note">
                   <ShieldCheck size={20} />
-
                   <div>
                     <strong>SHOP WITH CONFIDENCE</strong>
-
                     <p>
                       Check your selected sizes and quantities
                       before proceeding.
@@ -298,8 +318,6 @@ export default function Cart() {
                   </div>
                 </div>
               </div>
-
-              {/* ORDER SUMMARY */}
 
               <div className="col-lg-4">
                 <aside className="cart-summary-card">
@@ -311,7 +329,6 @@ export default function Cart() {
 
                   <div className="cart-summary-row">
                     <span>Products ({cartCount})</span>
-
                     <strong>
                       ₹{cartTotal.toLocaleString("en-IN")}
                     </strong>
@@ -319,7 +336,6 @@ export default function Cart() {
 
                   <div className="cart-summary-row">
                     <span>Delivery</span>
-
                     <strong>
                       {deliveryCharge === 0
                         ? "FREE"
@@ -330,7 +346,6 @@ export default function Cart() {
                   {discount > 0 && (
                     <div className="cart-summary-row cart-discount-row">
                       <span>Discount ({discount}%)</span>
-
                       <strong>
                         -₹{discountAmount.toLocaleString("en-IN")}
                       </strong>
@@ -339,17 +354,15 @@ export default function Cart() {
 
                   <div className="cart-delivery-message">
                     <Truck size={17} />
-
                     <span>
                       {cartTotal >= 5000
                         ? "You qualify for free delivery."
-                        : `Add ₹${(
+                        : `Add ₹${Math.max(
+                            0,
                             5000 - cartTotal
                           ).toLocaleString("en-IN")} more for free delivery.`}
                     </span>
                   </div>
-
-                  {/* PROMO CODE */}
 
                   <form
                     className="cart-promo-form"
@@ -372,9 +385,7 @@ export default function Cart() {
                         }
                       />
 
-                      <button type="submit">
-                        APPLY
-                      </button>
+                      <button type="submit">APPLY</button>
                     </div>
 
                     {promoMessage && (
@@ -388,7 +399,6 @@ export default function Cart() {
                         {promoApplied && (
                           <CheckCircle2 size={15} />
                         )}
-
                         {promoMessage}
                       </p>
                     )}
@@ -398,7 +408,6 @@ export default function Cart() {
 
                   <div className="cart-total-row">
                     <span>TOTAL</span>
-
                     <strong>
                       ₹{finalTotal.toLocaleString("en-IN")}
                     </strong>

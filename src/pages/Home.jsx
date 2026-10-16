@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+
+import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -26,29 +27,49 @@ import {
   products,
 } from "../data/products";
 
+const BASE_URL = import.meta.env.BASE_URL;
+
+// For images stored in the public/images folder
+const getAssetUrl = (path) => {
+  if (!path) return "";
+
+  if (/^(https?:\/\/|data:|blob:)/i.test(path)) {
+    return path;
+  }
+
+  const cleanPath = String(path).replace(/^\/+/, "");
+
+  // Prevent adding the Vite base path twice
+  if (cleanPath.startsWith(BASE_URL.replace(/^\/+/, ""))) {
+    return `/${cleanPath}`;
+  }
+
+  return `${BASE_URL}${cleanPath}`;
+};
+
 const categories = [
   {
     id: "men",
     title: "MEN'S COLLECTION",
     subtitle: "Built for every move",
-    image: "/images/men-collection.jpg",
-    link: "/shop?category=Men",
+    image: getAssetUrl("images/men-collection.jpg"),
+    link: "/shop?category=Running",
     number: "01",
   },
   {
     id: "women",
     title: "WOMEN'S COLLECTION",
     subtitle: "Confidence in every step",
-    image: "/images/women-collection.jpg",
-    link: "/shop?category=Women",
+    image: getAssetUrl("images/women-collection.jpg"),
+    link: "/shop?category=Lifestyle",
     number: "02",
   },
   {
     id: "sport",
     title: "SPORT COLLECTION",
     subtitle: "Performance meets style",
-    image: "/images/sport-collection.jpg",
-    link: "/shop?category=Sport",
+    image: getAssetUrl("images/sport-collection.jpg"),
+    link: "/shop?category=Training",
     number: "03",
   },
 ];
@@ -81,26 +102,44 @@ const features = [
 ];
 
 const stats = [
-  { number: "25+", label: "Sneaker Styles" },
-  { number: "03", label: "Curated Collections" },
+  { number: "26", label: "Sneaker Styles" },
+  { number: "03", label: "Product Categories" },
   { number: "100%", label: "Style Focused" },
   { number: "24/7", label: "Online Shopping" },
 ];
 
+const faqItems = [
+  {
+    question: "How do I choose my sneaker size?",
+    answer:
+      "Open a product page and check the available UK sizes. Choose the size that matches your usual footwear fit. If you are between sizes, review the sizing guidance before ordering.",
+  },
+  {
+    question: "Can I browse different collections?",
+    answer:
+      "Yes. Visit the Shop page to browse available sneaker styles. You can search by product name and use the category filters.",
+  },
+  {
+    question: "How can I contact customer support?",
+    answer:
+      "Visit our Contact page for the available contact options. Update the contact details with your real business phone number and email before publishing.",
+  },
+  {
+    question: "Can I add multiple products to my cart?",
+    answer:
+      "Select a product size and quantity on the product details page, then add the item to your cart.",
+  },
+];
+
 export default function Home() {
   const featuredProducts = getFeaturedProducts();
-
-  useEffect(() => {
-    window.dispatchEvent(new Event("scroll"));
-  }, []);
+  const popularProducts = products.slice(0, 4);
 
   return (
     <main className="home-page">
       {/* HERO SECTION */}
-
       <section className="hero-section">
         <div className="hero-grid-pattern" />
-
         <div className="hero-glow hero-glow-one" />
         <div className="hero-glow hero-glow-two" />
 
@@ -118,17 +157,14 @@ export default function Home() {
                 </span>
 
                 <span>THE FUTURE OF FOOTWEAR</span>
-
                 <span className="hero-eyebrow-line" />
               </div>
 
               <h1 className="hero-title">
                 WALK
                 <br />
-
                 BEYOND
                 <br />
-
                 <span>LIMITS.</span>
               </h1>
 
@@ -189,19 +225,19 @@ export default function Home() {
               <div className="hero-model-container">
                 <div className="hero-orbit hero-orbit-one" />
                 <div className="hero-orbit hero-orbit-two" />
-
                 <div className="hero-model-glow" />
 
                 <ShoeModel
-                  modelPath="/models/sneaker.glb"
+                  modelPath={getAssetUrl("models/sneaker.glb")}
                   className="hero-three-model"
+                  autoRotate={true}
+                  enableControls={true}
                 />
 
                 <div className="hero-model-badge">
                   <span className="hero-badge-small">
                     THE COLLECTION
                   </span>
-
                   <strong>01 / ELITE</strong>
                 </div>
               </div>
@@ -227,15 +263,12 @@ export default function Home() {
               <ArrowDown size={16} />
             </a>
 
-            <span className="hero-bottom-right">
-              EST. 2026
-            </span>
+            <span className="hero-bottom-right">EST. 2026</span>
           </div>
         </div>
       </section>
 
       {/* STATISTICS */}
-
       <section className="stats-section">
         <div className="container">
           <div className="row g-0">
@@ -262,7 +295,6 @@ export default function Home() {
       </section>
 
       {/* FEATURED PRODUCTS */}
-
       <section
         className="featured-section section-padding"
         id="featured"
@@ -300,7 +332,6 @@ export default function Home() {
       </section>
 
       {/* COLLECTION CATEGORIES */}
-
       <section className="category-section section-padding">
         <div className="container">
           <div className="section-heading-centered">
@@ -361,7 +392,6 @@ export default function Home() {
       </section>
 
       {/* BRAND EXPERIENCE */}
-
       <section className="experience-section section-padding">
         <div className="container">
           <div className="experience-panel">
@@ -430,9 +460,16 @@ export default function Home() {
               >
                 <div className="experience-image-frame">
                   <img
-                    src="/images/hero-banner.jpg"
+                    src={getAssetUrl("images/hero-banner.jpg")}
                     alt="Élite Sneakers premium collection"
                     loading="lazy"
+                    onError={(event) => {
+                      console.error(
+                        "Hero banner image failed:",
+                        event.currentTarget.src
+                      );
+                      event.currentTarget.style.display = "none";
+                    }}
                   />
 
                   <div className="experience-image-overlay" />
@@ -458,7 +495,6 @@ export default function Home() {
       </section>
 
       {/* WHY CHOOSE US */}
-
       <section className="benefits-section section-padding">
         <div className="container">
           <div className="section-heading-centered">
@@ -502,7 +538,6 @@ export default function Home() {
                     </span>
 
                     <h3>{feature.title}</h3>
-
                     <p>{feature.description}</p>
                   </article>
                 </motion.div>
@@ -513,7 +548,6 @@ export default function Home() {
       </section>
 
       {/* OFFER BANNER */}
-
       <section className="home-offer-section">
         <div className="container">
           <div className="home-offer-banner">
@@ -548,8 +582,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ALL PRODUCTS PREVIEW */}
-
+      {/* POPULAR PRODUCTS */}
       <section className="popular-section section-padding">
         <div className="container">
           <div className="section-heading-row">
@@ -575,13 +608,13 @@ export default function Home() {
           </div>
 
           <div className="row g-4">
-            {products.slice(0, 4).map((product, index) => (
+            {popularProducts.map((product, index) => (
               <motion.div
                 className="col-6 col-lg-3"
-                key={product.id}
+                key={product.id ?? index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                viewport={{ once: true, amount: 0.15 }}
                 transition={{
                   duration: 0.5,
                   delay: index * 0.1,
@@ -592,11 +625,20 @@ export default function Home() {
                     to={`/product/${product.id}`}
                     className="popular-product-image"
                   >
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      loading="lazy"
-                    />
+                    
+<img
+  src={product.image}
+  alt={product.name || "Sneaker"}
+  loading="eager"
+  onError={(event) => {
+    console.error(
+      "Image failed:",
+      product.imageName,
+      event.currentTarget.src
+    );
+  }}
+/>
+
 
                     <span className="popular-product-arrow">
                       <ArrowUpRight size={19} />
@@ -609,7 +651,10 @@ export default function Home() {
 
                     <div className="popular-product-bottom">
                       <strong>
-                        ₹{Number(product.price).toLocaleString("en-IN")}
+                        ₹
+                        {Number(product.price || 0).toLocaleString(
+                          "en-IN"
+                        )}
                       </strong>
 
                       <Link
@@ -628,7 +673,6 @@ export default function Home() {
       </section>
 
       {/* FAQ SECTION */}
-
       <section className="home-faq-section section-padding">
         <div className="container">
           <div className="row g-5">
@@ -655,37 +699,13 @@ export default function Home() {
             </div>
 
             <div className="col-lg-7">
-              <Accordion
-                items={[
-                  {
-                    question: "How do I choose my sneaker size?",
-                    answer:
-                      "Open a product page and check the available UK sizes. Choose the size that matches your usual footwear fit. If you are between sizes, review the sizing guidance before ordering.",
-                  },
-                  {
-                    question: "Can I browse different collections?",
-                    answer:
-                      "Yes. Visit the Shop page to browse the available sneaker styles. You can search by product name and use the available category filters.",
-                  },
-                  {
-                    question: "How can I contact customer support?",
-                    answer:
-                      "Visit our Contact page for the available contact options. Update the demonstration contact details with your real business phone number and email before publishing the website.",
-                  },
-                  {
-                    question: "Can I add multiple products to my cart?",
-                    answer:
-                      "Yes. Select a product size and quantity on the product details page, then add the item to your cart. Different sizes of the same shoe are tracked separately.",
-                  },
-                ]}
-              />
+              <Accordion items={faqItems} />
             </div>
           </div>
         </div>
       </section>
 
       {/* FINAL CALL TO ACTION */}
-
       <section className="home-final-cta">
         <div className="container">
           <div className="home-final-cta-inner">
