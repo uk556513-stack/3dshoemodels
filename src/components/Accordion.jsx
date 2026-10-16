@@ -1,36 +1,26 @@
 import React, { useState } from "react";
-
 import { ChevronDown } from "lucide-react";
 
 const defaultItems = [
   {
     title: "How do I choose the right shoe size?",
     content:
-      "Check the available sizes on the product details page. " +
-      "Choose your usual UK shoe size and review the fit information " +
-      "before adding the product to your cart.",
+      "Check the available sizes on the product details page. Choose your usual UK shoe size before adding the product to your cart.",
   },
-
   {
     title: "How can I track my order?",
     content:
-      "Order tracking requires a connected order management system. " +
-      "Once a backend is configured, tracking information can be " +
-      "displayed using your order number.",
+      "Order tracking requires a connected order management system. This demo website does not yet have a live tracking system.",
   },
-
   {
     title: "What is your return policy?",
     content:
-      "The return policy should be confirmed before purchasing. " +
-      "For this demonstration website, no real return request is submitted.",
+      "Please confirm the return policy before purchasing. This demonstration website does not submit real return requests.",
   },
-
   {
     title: "Are the shoes available in different colours?",
     content:
-      "Colour availability depends on the product. Additional colour " +
-      "variants can be configured in the product data.",
+      "Colour availability depends on the product. Additional colour variants can be configured in the product data.",
   },
 ];
 
@@ -46,17 +36,15 @@ const Accordion = ({
         return previous.filter((item) => item !== index);
       }
 
-      if (allowMultiple) {
-        return [...previous, index];
-      }
-
-      return [index];
+      return allowMultiple ? [...previous, index] : [index];
     });
   };
 
   return (
     <div className="accordion-luxury">
       {items.map((item, index) => {
+        const question = item.question ?? item.title;
+        const answer = item.answer ?? item.content;
         const isOpen = openItems.includes(index);
 
         return (
@@ -64,7 +52,7 @@ const Accordion = ({
             className={`accordion-item ${
               isOpen ? "accordion-item-open" : ""
             }`}
-            key={`${item.title}-${index}`}
+            key={`${question}-${index}`}
           >
             <button
               type="button"
@@ -78,9 +66,7 @@ const Accordion = ({
                 {String(index + 1).padStart(2, "0")}
               </span>
 
-              <span className="accordion-title">
-                {item.title}
-              </span>
+              <span className="accordion-title">{question}</span>
 
               <ChevronDown
                 size={20}
@@ -92,7 +78,7 @@ const Accordion = ({
 
             {isOpen && (
               <div className="accordion-answer">
-                <p>{item.content}</p>
+                <p>{answer}</p>
               </div>
             )}
           </div>
